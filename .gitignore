@@ -1,0 +1,17 @@
+# Système
+.DS_Store
+
+# Médias bruts (lourds) : restent en local / sauvegarde Drive, jamais sur GitHub
+contenu/instagram/Photos/
+contenu/instagram/Videos/
+contenu/instagram/Photo_de_profil.jpg
+# Script avec liens Instagram signés (expirent en quelques jours)
+contenu/instagram/telecharger_instagram.command
+
+# Fichiers lourds de référence
+design/inspiration/*.png
+archives/
+
+# Vidéos : jamais dans le dépôt (héberger ailleurs)
+*.mp4
+*.mov
