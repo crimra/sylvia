@@ -1,7 +1,7 @@
 /* Layout : magazine éditorial plein cadre — gros plans de ses looks, typo condensée jaune géante, polaroïds, pellicule */
 :root{
   --ink:#0E0D0C; --ink-2:#1B1917; --line:#2E2A27; --paper:#F4EFE6; --cream:#E8E1D6; --muted:#B9B1A5; --plum:#4A2131; --yellow:#F6E23E;
-  --display:Anton,Impact,'Arial Narrow',sans-serif; --thin:Outfit,'Helvetica Neue',sans-serif; --body:Archivo,'Helvetica Neue',Arial,sans-serif; --mono:Archivo,'Helvetica Neue',Arial,sans-serif;
+  --display:Anton,Impact,'Arial Narrow',sans-serif; --thin:Outfit,'Helvetica Neue',sans-serif; --body:'DM Sans','Helvetica Neue',Arial,sans-serif; --mono:'DM Sans','Helvetica Neue',Arial,sans-serif;
   --gut-l:max(16px, env(safe-area-inset-left,0px)); --gut-r:max(16px, env(safe-area-inset-right,0px));
   color-scheme:dark;
 }
