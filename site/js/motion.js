@@ -5,21 +5,29 @@
   const root = document.documentElement;
   const header = document.querySelector('.top');
 
-  /* En-tête : fond au défilement, caché en descendant, visible en remontant (indépendant de GSAP) */
-  let lastY = 0;
+  /* En-tête : fond au défilement, caché après une vraie descente, revient après une vraie remontée.
+     Seuils cumulés pour ignorer les petits à-coups du doigt, l'inertie et le rebond (indépendant de GSAP). */
+  const HIDE_AFTER = 90, SHOW_AFTER = 40;
+  let lastY = window.scrollY, run = 0, ticking = false;
   const onScroll = () => {
-    const y = window.scrollY;
+    ticking = false;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const y = Math.min(Math.max(window.scrollY, 0), max);   // rebond iOS ignoré
+    const dy = y - lastY; lastY = y;
+    if (!dy) return;
     header.classList.toggle('scrolled', y > 40);
-    header.classList.toggle('away', y > 320 && y > lastY + 2);
-    if (y < lastY - 2) header.classList.remove('away');
-    lastY = y;
+    run = (dy > 0) === (run > 0) ? run + dy : dy;              // distance parcourue dans la même direction
+    if (y < 200 || (run < 0 && -run > SHOW_AFTER)) header.classList.remove('away');
+    else if (run > HIDE_AFTER && !document.body.style.overflow) header.classList.add('away');
   };
-  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+  window.addEventListener('scroll', () => { if (!ticking){ ticking = true; requestAnimationFrame(onScroll); } }, {passive:true});
+  header.classList.toggle('scrolled', window.scrollY > 40);
 
   if (!root.classList.contains('m') || !window.gsap || !window.ScrollTrigger){ root.classList.remove('m'); return; }
 
   const {gsap, ScrollTrigger} = window;
   gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.config({ignoreMobileResize: true});   // la barre d'adresse mobile ne relance pas les calculs
   try {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -60,7 +68,7 @@
   intro
     .to('.hero > img.bg', {scale: 1, duration: 2.4, ease: 'power2.out'}, 0)
     .to('.hero h1 .ln > span', {y: 0, duration: 1.3, stagger: .11}, .15)
-    .to('.top', {opacity: 1, duration: .8, ease: EASE}, .5)
+    .call(() => header.classList.add('in'), null, .5)
     .fromTo('.hero p', {opacity: 0, y: 24}, {opacity: 1, y: 0, duration: 1}, .75)
     .fromTo('.hero-ctas', {opacity: 0, y: 24}, {opacity: 1, y: 0, duration: 1}, .85)
     .fromTo('.pola-w', {opacity: 0, y: -160, rotation: i => i ? 18 : -22},
@@ -241,7 +249,7 @@
       const th = document.createElement('img');
       th.className = 'svc-th'; th.src = row.dataset.img; th.alt = ''; th.loading = 'lazy';
       row.appendChild(th);
-      ScrollTrigger.create({trigger: row, start: 'top 62%', end: 'bottom 38%', toggleClass: 'on'});
+      ScrollTrigger.create({trigger: row, start: 'top 55%', end: 'bottom 45%', toggleClass: 'on'});
     });
 
     $$('.pola-w').forEach((el, i) => gsap.fromTo(el, {yPercent: 0, xPercent: 0}, {yPercent: i ? -90 : -140, xPercent: i ? 35 : -35, ease: 'none',

@@ -8,7 +8,7 @@ html.lenis{scroll-behavior:auto}
 
 /* ---------- Accueil : états de départ avant l'intro ---------- */
 .m .hero h1 .ln > span{transform:translateY(110%)}
-.m .hero p, .m .hero-ctas, .m .spaced > span, .m .pola-w, .m .top{opacity:0}
+.m .hero p, .m .hero-ctas, .m .spaced > span, .m .pola-w, .m .top:not(.in){opacity:0}
 .m .hero > img.bg{transform:scale(1.14)}
 
 /* Polaroïds : flottement continu (propriété translate, indépendante du transform du survol) */
@@ -17,9 +17,12 @@ html.lenis{scroll-behavior:auto}
 @keyframes float{0%,100%{translate:0 0}50%{translate:0 -12px}}
 
 /* ---------- En-tête : fixe, se cache en descendant, revient en remontant ---------- */
-.top{position:fixed;transition:transform .45s cubic-bezier(.2,.8,.2,1),background-color .3s,padding .3s,backdrop-filter .3s}
-.top.scrolled{padding-top:12px;padding-bottom:12px;background:rgba(14,13,12,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-.top.away{transform:translateY(-110%)}
+.top{position:fixed;padding-bottom:12px;will-change:transform;
+  transition:transform .6s cubic-bezier(.22,1,.36,1),opacity .5s ease,background-color .4s ease,padding .4s ease}
+.top.scrolled{padding-top:12px;background:rgba(14,13,12,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.top.away{transform:translateY(-100%);opacity:0;transition-duration:.5s,.35s,.4s,.4s;pointer-events:none}
+/* Téléphone : hauteur fixe (pas de saut), seul le fond apparaît */
+@media (max-width:820px){.top, .top.scrolled{padding-top:14px;padding-bottom:14px}}
 
 /* ---------- Boutons : effet magnétique + flèche qui glisse ---------- */
 .magnet{translate:var(--mx,0px) var(--my,0px)}
@@ -92,11 +95,14 @@ html.lenis{scroll-behavior:auto}
   .card .lab{opacity:calc(1 - var(--ad, 0) * .6)}
 
   .svc-th{position:absolute;right:18px;bottom:28px;width:96px;height:120px;object-fit:cover;object-position:center 25%;
-    border:3px solid var(--ink);rotate:4deg;clip-path:inset(100% 0 0 0);transition:clip-path .7s cubic-bezier(.2,.8,.2,1),rotate .7s cubic-bezier(.2,.8,.2,1)}
+    border:3px solid var(--ink);rotate:-3deg;clip-path:inset(100% 0 0 0);opacity:0;
+    transition:clip-path .9s cubic-bezier(.22,1,.36,1),opacity .6s ease}
+  .svc{transition:background-color .6s ease}
+  .svc button{transition:background-color .6s ease,color .6s ease}
+  .svc:hover h3{transform:none}
   .svc.on{background:var(--yellow)}
-  .svc.on h3{transform:translateX(8px)}
   .svc.on button{background:var(--ink);color:var(--yellow)}
-  .svc.on .svc-th{clip-path:inset(0 0 0 0);rotate:-3deg}
+  .svc.on .svc-th{clip-path:inset(0 0 0 0);opacity:1}
 }
 @media (min-width:821px){.svc-th{display:none}}
 
