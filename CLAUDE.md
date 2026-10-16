@@ -22,3 +22,6 @@ Polices Google Fonts : Anton (titres), Outfit, Archivo, Space Mono.
 - `[PRIX]`, `[DURÉE]` des prestations — `js/main.js`
 - `[NUMERO]` WhatsApp (`wa.me/...`) — `js/main.js`
 - `[DÉLAI]` de réponse — `index.html`
+
+## Git
+- Pas de ligne `Co-Authored-By` ni de mention de Claude dans les commits ou PR.
