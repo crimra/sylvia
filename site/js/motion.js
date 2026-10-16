@@ -187,6 +187,72 @@
     });
   }
 
+  /* ---------- 6. Carrousel qui dérive tout seul (montre qu'il y a des looks des deux côtés) ---------- */
+  const track = $('#track');
+  const drift = {pos: 0, dir: 1, paused: 0, visible: false, idleUntil: 0, raf: 0};
+  const SPEED = small ? .45 : .35;           // px par image (~25 px/s)
+  const busy = () => !$('#lb').hidden || !$('#bk').hidden || document.hidden;
+  const hold = (ms = 2800) => { drift.idleUntil = performance.now() + ms; track.classList.remove('drift'); };
+  const tick = now => {
+    drift.raf = requestAnimationFrame(tick);
+    if (!drift.visible || drift.paused || busy() || now < drift.idleUntil) return;
+    const max = track.scrollWidth - track.clientWidth; if (max <= 0) return;
+    if (!track.classList.contains('drift')){ track.classList.add('drift'); drift.pos = track.scrollLeft; }
+    drift.pos += SPEED * drift.dir;
+    if (drift.pos >= max){ drift.pos = max; drift.dir = -1; hold(1600); }
+    if (drift.pos <= 0){ drift.pos = 0; drift.dir = 1; hold(1600); }
+    track.scrollLeft = Math.round(drift.pos);
+  };
+  new IntersectionObserver(([en]) => { drift.visible = en.isIntersecting; }, {threshold: .35}).observe(track);
+  ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(t => track.addEventListener(t, () => hold(), {passive: true}));
+  if (fine){ track.addEventListener('pointerenter', () => { drift.paused = 1; track.classList.remove('drift'); }); track.addEventListener('pointerleave', () => { drift.paused = 0; hold(900); }); }
+  $$('#prev, #next, #chips').forEach(b => b.addEventListener('click', () => hold(4000)));
+  hold(1200); drift.raf = requestAnimationFrame(tick);
+
+  /* ---------- 7. Filtres : petit aller-retour à l'apparition pour montrer qu'ils défilent ---------- */
+  const chipsBox = $('#chips');
+  ScrollTrigger.create({trigger: chipsBox, start: 'top 85%', once: true, onEnter: () => {
+    if (chipsBox.scrollWidth - chipsBox.clientWidth < 20) return;
+    const o = {x: 0};
+    gsap.timeline({delay: .6})
+      .to(o, {x: 90, duration: .7, ease: 'power2.inOut', onUpdate: () => { chipsBox.scrollLeft = o.x; }})
+      .to(o, {x: 0, duration: .8, ease: 'power3.inOut', delay: .25, onUpdate: () => { chipsBox.scrollLeft = o.x; }});
+  }});
+
+  /* ---------- 8. Téléphone : relief du carrousel, menu qui s'allume, polaroïds au défilement ---------- */
+  if (!fine){
+    let queued = false;
+    const depthCards = () => {
+      queued = false;
+      const mid = track.getBoundingClientRect().left + track.clientWidth / 2;
+      for (const c of track.querySelectorAll('.card')){
+        const r = c.getBoundingClientRect();
+        const d = Math.min(1, Math.abs(r.left + r.width / 2 - mid) / (track.clientWidth * .6));
+        c.style.setProperty('--ad', d.toFixed(3));
+      }
+    };
+    const queue = () => { if (!queued){ queued = true; requestAnimationFrame(depthCards); } };
+    track.addEventListener('scroll', queue, {passive: true});
+    window.addEventListener('resize', queue);
+    new MutationObserver(queue).observe(track, {childList: true});
+    queue();
+
+    $$('.svc').forEach(row => {
+      const th = document.createElement('img');
+      th.className = 'svc-th'; th.src = row.dataset.img; th.alt = ''; th.loading = 'lazy';
+      row.appendChild(th);
+      ScrollTrigger.create({trigger: row, start: 'top 62%', end: 'bottom 38%', toggleClass: 'on'});
+    });
+
+    $$('.pola-w').forEach((el, i) => gsap.fromTo(el, {yPercent: 0, xPercent: 0}, {yPercent: i ? -90 : -140, xPercent: i ? 35 : -35, ease: 'none',
+      scrollTrigger: {trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true}}));
+  }
+
+  /* Petite vibration au choix d'un filtre ou d'une option (Android ; l'iPhone l'ignore) */
+  if (!fine && navigator.vibrate){
+    document.addEventListener('click', e => { if (e.target.closest('[data-f], #bkBody button, .arw, [data-book]')) navigator.vibrate(8); });
+  }
+
   /* Les images chargées tard décalent la page : on recalcule les déclencheurs */
   window.addEventListener('load', () => ScrollTrigger.refresh());
 

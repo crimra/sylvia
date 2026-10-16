@@ -60,6 +60,46 @@ html.lenis{scroll-behavior:auto}
 .spark.s2{background:var(--paper);width:5px;height:5px}
 .spark.s3{border-radius:1px;transform:rotate(45deg)}
 
+/* Dérive automatique du carrousel : pas d'aimantation pendant qu'il glisse seul */
+.track.drift{scroll-snap-type:none}
+
+/* ---------- Filtres du portfolio : indicateur quand ils débordent (téléphone) ---------- */
+.chips-w{position:relative;min-width:0;max-width:100%}
+.chips-more{display:none}
+@media (max-width:820px){
+  .chips-w{margin-right:calc(-1 * var(--gut-r))}
+  .chips-w .chips{margin-right:0;--fl:0px;--fr:0px;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--fl),#000 calc(100% - var(--fr)),transparent 100%);
+            mask-image:linear-gradient(90deg,transparent 0,#000 var(--fl),#000 calc(100% - var(--fr)),transparent 100%)}
+  .chips-w.more-l .chips{--fl:36px}
+  .chips-w.more-r .chips{--fr:72px}
+  .chips-more{display:grid;place-items:center;position:absolute;right:calc(var(--gut-r) - 4px);top:50%;width:34px;height:34px;margin-top:-17px;border-radius:50%;
+    background:var(--ink);color:var(--yellow);font-size:16px;pointer-events:none;opacity:0;transition:opacity .3s}
+  .chips-w.more-r .chips-more{opacity:1;animation:nudge 1.4s ease-in-out infinite}
+}
+@keyframes nudge{0%,100%{translate:0 0}50%{translate:5px 0}}
+
+/* ---------- Téléphone : polaroïds de retour, carrousel en relief, menu qui s'allume ---------- */
+@media (max-width:820px){
+  .pola-w{display:block}
+  .p1{left:-10px;top:112px}
+  .p2{right:-10px;top:150px}
+  .pola{padding:7px 7px 22px;box-shadow:0 12px 24px rgba(0,0,0,.45)}
+  .pola img{width:74px;height:92px;border-width:3px}
+  .pola b{font-size:13px;bottom:3px}
+
+  .card .ph{scale:calc(1 - var(--ad, 0) * .14);translate:0 calc(var(--ad, 0) * 22px);transition:box-shadow .45s}
+  .card .lab{opacity:calc(1 - var(--ad, 0) * .6)}
+
+  .svc-th{position:absolute;right:18px;bottom:28px;width:96px;height:120px;object-fit:cover;object-position:center 25%;
+    border:3px solid var(--ink);rotate:4deg;clip-path:inset(100% 0 0 0);transition:clip-path .7s cubic-bezier(.2,.8,.2,1),rotate .7s cubic-bezier(.2,.8,.2,1)}
+  .svc.on{background:var(--yellow)}
+  .svc.on h3{transform:translateX(8px)}
+  .svc.on button{background:var(--ink);color:var(--yellow)}
+  .svc.on .svc-th{clip-path:inset(0 0 0 0);rotate:-3deg}
+}
+@media (min-width:821px){.svc-th{display:none}}
+
 /* Lettres découpées pour les animations */
 .ch{display:inline-block;will-change:transform}
 

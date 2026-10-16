@@ -41,7 +41,7 @@ function renderPf(){
     return `<figure class="card" style="margin-top:${lift[i%lift.length]}px;transform:rotate(${tilt[i%tilt.length]}deg);margin-left:0;margin-bottom:0">
       <button class="ph" type="button" data-open="${w.id}" aria-label="Agrandir : ${esc(w.title)}" style="width:${cw}px;height:${ch}px;max-width:72vw"><img src="${IMG[w.id]}" alt="${esc(w.title)}, maquillage par Sylvia Grace" draggable="false"><span class="dot" aria-hidden="true">+</span></button>
       <figcaption class="lab"><strong>${esc(w.title)}</strong><span>${cats[w.cat]}</span></figcaption></figure>`; }).join('') + '<div style="flex:0 0 8vw"></div>';
-  track.scrollLeft = 0; updCount();
+  track.scrollLeft = 0; updCount(); if (typeof updChips === 'function') updChips();
 }
 function cardsArr(){ return [...track.querySelectorAll('.card')]; }
 function curIndex(){ const c = cardsArr(), mid = track.scrollLeft + track.clientWidth*0.35; let best = 0; c.forEach((el,i) => { if (el.offsetLeft <= mid) best = i; }); return best; }
@@ -76,6 +76,15 @@ window.addEventListener('pointerup', () => {
   glide = requestAnimationFrame(step);
 });
 track.addEventListener('click', e => { if (moved){ e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+/* filtres qui débordent (téléphone) : fondu + flèche du côté où il reste des filtres */
+const chips = $('#chips');
+function updChips(){
+  const max = chips.scrollWidth - chips.clientWidth;
+  chips.parentElement.classList.toggle('more-l', chips.scrollLeft > 4);
+  chips.parentElement.classList.toggle('more-r', max > 4 && chips.scrollLeft < max - 4);
+}
+chips.addEventListener('scroll', updChips, {passive:true});
+window.addEventListener('resize', updChips);
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('[data-f]'); if (!b || b.dataset.f===filter) return;
   const run = () => { filter = b.dataset.f; renderPf(); };
