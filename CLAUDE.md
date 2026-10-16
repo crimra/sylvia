@@ -5,8 +5,14 @@ Prestations : mariée, anniversaire & soirée, shooting, clip & tournage, makeup
 Langue du site : français (tutoiement). Monnaie : FCFA.
 
 ## Stack
-HTML / CSS / JS natif, sans framework ni build. Ouvrir `site/index.html` dans le navigateur.
-Polices Google Fonts : Anton (titres), Outfit, Archivo, Space Mono.
+HTML / CSS / JS natif, sans framework ni build. Servir `site/` en local : `python3 -m http.server 8080 -d site`.
+Polices Google Fonts : Anton (grands titres uniquement), Outfit (mots géants fins), DM Sans (texte et labels).
+
+## Animations
+- `css/motion.css` + `js/motion.js`, par-dessus `style.css` / `main.js`. CDN : GSAP 3.12.5 + ScrollTrigger, Lenis 1.1.13.
+- Classe `.m` sur `<html>` (posée dans `<head>`) = états de départ ; absente si « réduire les animations » ou si les scripts ne chargent pas.
+- `main.js` appelle `window.motion` (swapPf, ovIn, ovOut, bkStep) seulement s'il existe : le site doit marcher sans.
+- Effets souris (polaroïds, photo du menu, boutons magnétiques) seulement sur `(hover: hover) and (pointer: fine)`.
 
 ## Structure
 - `site/` — le site déployé (`index.html`, `css/style.css`, `js/main.js`, `images/`)

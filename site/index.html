@@ -9,7 +9,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@200;400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap">
 <link rel="stylesheet" href="css/style.css">
-
+<link rel="stylesheet" href="css/motion.css">
+<script>
+  /* Animations : activées seulement si l'appareil ne demande pas de réduire le mouvement.
+     Filet de sécurité : si motion.js ne démarre pas (réseau lent), on réaffiche tout. */
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('m');
+    setTimeout(function(){ if (!window.motion) document.documentElement.classList.remove('m'); }, 3500);
+  }
+</script>
 </head>
 <body>
 <header class="top">
@@ -20,11 +28,11 @@
 
 <section class="hero">
   <img class="bg" src="images/hero.jpg" alt="Maquillage artistique multicolore réalisé par Sylvia Grace">
-  <button class="pola p1" type="button" data-open="pinkart" aria-label="Agrandir le look Poupée au cœur humain"><img src="images/pinkart.jpg" alt=""><b>*</b></button>
-  <button class="pola p2" type="button" data-open="redgloves" aria-label="Agrandir le look Valentine beauty"><img src="images/redgloves.jpg" alt=""><b>×</b></button>
+  <div class="pola-w p1"><button class="pola" type="button" data-open="pinkart" aria-label="Agrandir le look Poupée au cœur humain"><img src="images/pinkart.jpg" alt=""><b>*</b></button></div>
+  <div class="pola-w p2"><button class="pola" type="button" data-open="redgloves" aria-label="Agrandir le look Valentine beauty"><img src="images/redgloves.jpg" alt=""><b>×</b></button></div>
   <div class="hero-c">
     <div class="hero-stack">
-      <h1>Révèle<br>l'art<br>qui est<br>en toi</h1>
+      <h1><span class="ln"><span>Révèle</span></span><span class="ln"><span>l'art</span></span><span class="ln"><span>qui est</span></span><span class="ln"><span>en toi</span></span></h1>
       <p>Maquilleuse professionnelle à Brazzaville. Mariages, anniversaires, clips, shootings et maquillage artistique.</p>
       <div class="hero-ctas">
         <button class="btn" type="button" data-book>Réserver ma séance <span aria-hidden="true">→</span></button>
@@ -133,7 +141,7 @@
   <small>Brazzaville · Congo — © 2026</small>
 </div></footer>
 
-<div class="ov" id="lb" hidden role="dialog" aria-modal="true" aria-label="Look en grand">
+<div class="ov" id="lb" hidden data-lenis-prevent role="dialog" aria-modal="true" aria-label="Look en grand">
   <button class="close" type="button" data-close aria-label="Fermer">×</button>
   <div class="lb">
     <img id="lbImg" src="" alt="">
@@ -146,7 +154,7 @@
   </div>
 </div>
 
-<div class="ov" id="bk" hidden role="dialog" aria-modal="true" aria-label="Réserver une séance">
+<div class="ov" id="bk" hidden data-lenis-prevent role="dialog" aria-modal="true" aria-label="Réserver une séance">
   <button class="close" type="button" data-close aria-label="Fermer la réservation">×</button>
   <div class="bk">
     <aside class="bk-side">
@@ -172,6 +180,10 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
 <script src="js/main.js"></script>
+<script src="js/motion.js"></script>
 </body>
 </html>

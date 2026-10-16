@@ -51,29 +51,56 @@ $('#prev').addEventListener('click', () => go(-1));
 $('#next').addEventListener('click', () => go(1));
 track.addEventListener('scroll', updCount, {passive:true});
 track.addEventListener('keydown', e => { if (e.key==='ArrowRight'){ e.preventDefault(); go(1); } if (e.key==='ArrowLeft'){ e.preventDefault(); go(-1); } });
-/* glisser à la souris (le doigt utilise le défilement natif) */
-let dragX = null, startScroll = 0, moved = false;
-track.addEventListener('pointerdown', e => { if (e.pointerType!=='mouse') return; dragX = e.clientX; startScroll = track.scrollLeft; moved = false; });
-window.addEventListener('pointermove', e => { if (dragX===null) return; const dx = e.clientX - dragX; if (Math.abs(dx) > 5){ moved = true; track.classList.add('drag'); } track.scrollLeft = startScroll - dx; });
-window.addEventListener('pointerup', () => { if (dragX===null) return; dragX = null; track.classList.remove('drag'); });
+/* glisser à la souris (le doigt utilise le défilement natif), avec élan au lâcher et rebond en bout de course */
+const calm = matchMedia('(prefers-reduced-motion: reduce)');
+let dragX = null, startScroll = 0, moved = false, vel = 0, lastX = 0, lastT = 0, glide = 0;
+track.addEventListener('pointerdown', e => { if (e.pointerType!=='mouse') return; cancelAnimationFrame(glide); dragX = lastX = e.clientX; lastT = performance.now(); vel = 0; startScroll = track.scrollLeft; moved = false; });
+window.addEventListener('pointermove', e => {
+  if (dragX===null) return;
+  const dx = e.clientX - dragX; if (Math.abs(dx) > 5){ moved = true; track.classList.add('drag'); }
+  track.scrollLeft = startScroll - dx;
+  const now = performance.now(), dt = Math.max(1, now - lastT);
+  vel = .8 * ((e.clientX - lastX) / dt) + .2 * vel; lastX = e.clientX; lastT = now;
+});
+window.addEventListener('pointerup', () => {
+  if (dragX===null) return; dragX = null;
+  let v = vel * 16;
+  if (calm.matches || Math.abs(v) < 2 || performance.now() - lastT > 80){ track.classList.remove('drag'); return; }
+  const max = track.scrollWidth - track.clientWidth;
+  const step = () => {
+    track.scrollLeft -= v; v *= .94;
+    const atEdge = track.scrollLeft <= 0 || track.scrollLeft >= max - 1;
+    if (atEdge && Math.abs(v) > 4){ track.animate([{translate:'0 0'},{translate:`${Math.sign(v)*Math.min(48, Math.abs(v)*2.5)}px 0`},{translate:'0 0'}], {duration:520, easing:'cubic-bezier(.2,.8,.2,1)'}); v = 0; }
+    if (Math.abs(v) > .5) glide = requestAnimationFrame(step); else track.classList.remove('drag');
+  };
+  glide = requestAnimationFrame(step);
+});
 track.addEventListener('click', e => { if (moved){ e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
-$('#chips').addEventListener('click', e => { const b = e.target.closest('[data-f]'); if (b){ filter = b.dataset.f; renderPf(); } });
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-f]'); if (!b || b.dataset.f===filter) return;
+  const run = () => { filter = b.dataset.f; renderPf(); };
+  window.motion ? window.motion.swapPf(track, run) : run();
+});
 renderPf();
 
 /* services */
-$('#svcs').innerHTML = services.map((s,i) => `<div class="svc"><span class="num">0${i+1}</span><div class="txt"><h3>${s.name}</h3><p>${s.desc}</p></div><div class="price"><span>À partir de</span><b>${s.price}</b></div><button type="button" data-book="${s.id}">Réserver</button></div>`).join('');
+$('#svcs').innerHTML = services.map((s,i) => `<div class="svc" data-img="${IMG[s.img]}"><span class="num">0${i+1}</span><div class="txt"><h3>${s.name}</h3><p>${s.desc}</p></div><div class="price"><span>À partir de</span><b>${s.price}</b></div><button type="button" data-book="${s.id}">Réserver</button></div>`).join('');
 
 /* overlays */
 let lastFocus = null;
-function show(el){ lastFocus = document.activeElement; el.hidden = false; document.body.style.overflow = 'hidden'; el.querySelector('.close').focus(); }
-function hide(el){ el.hidden = true; if ($('#lb').hidden && $('#bk').hidden) document.body.style.overflow = ''; lastFocus && lastFocus.focus && lastFocus.focus(); }
-function openLook(id){
+function show(el, src){ if (el.hidden) lastFocus = document.activeElement; el.hidden = false; document.body.style.overflow = 'hidden'; el.querySelector('.close').focus(); window.motion && window.motion.ovIn(el, src); }
+function hide(el){
+  if (el.hidden) return;
+  const done = () => { el.hidden = true; if ($('#lb').hidden && $('#bk').hidden){ document.body.style.overflow = ''; lastFocus && lastFocus.focus && lastFocus.focus(); } };
+  window.motion ? window.motion.ovOut(el, done) : done();
+}
+function openLook(id, src){
   const w = works.find(x => x.id===id); if (!w) return;
   $('#lbImg').src = IMG[w.id]; $('#lbImg').alt = w.title; $('#lbCat').textContent = cats[w.cat]; $('#lbTitle').textContent = w.title; $('#lbCredit').textContent = w.credit;
-  show($('#lb'));
+  show($('#lb'), src);
 }
 document.addEventListener('click', e => {
-  const o = e.target.closest('[data-open]'); if (o){ openLook(o.dataset.open); return; }
+  const o = e.target.closest('[data-open]'); if (o){ openLook(o.dataset.open, o); return; }
   const b = e.target.closest('[data-book]'); if (b){ e.preventDefault(); if (!$('#lb').hidden) hide($('#lb')); openBooking(b.dataset.book || null); return; }
   const c = e.target.closest('[data-close]'); if (c){ hide(c.closest('.ov')); }
 });
@@ -83,6 +110,7 @@ document.addEventListener('keydown', e => { if (e.key==='Escape'){ ['#bk','#lb']
 const TODAY = new Date(2026,9,16);
 const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const B = {step:1, service:null, month:0, day:null, time:null, place:null, people:1, name:'', phone:'', note:''};
+let shownStep = 0;
 function openBooking(svc){ if (svc && services.some(s=>s.id===svc)){ B.service = svc; if (B.step===1) B.step = 2; } if (B.step===5) B.step = 1; renderBk(); show($('#bk')); }
 const sel = () => services.find(s => s.id===B.service);
 function dateLabel(){ if (!B.day) return '—'; const d = new Date(B.day); return ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'][d.getDay()]+' '+d.getDate()+' '+months[d.getMonth()]; }
@@ -96,7 +124,7 @@ function renderBk(){
   const s = sel();
   $('#bkImg').src = s ? IMG[s.img] : IMG.hero;
   $('#rS').textContent = s ? s.name : '—'; $('#rD').textContent = dateLabel(); $('#rT').textContent = B.time || '—'; $('#rP').textContent = s ? s.price : '—';
-  $('#prog').innerHTML = ['Prestation','Date & heure','Infos','Confirmation'].map((l,i) => `<li class="${B.step===i+1?'cur':B.step>i+1?'done':''}"><small>0${i+1}</small>${l}</li>`).join('');
+  $('#prog').innerHTML = ['Prestation','Date & heure','Infos','Confirmation'].map((l,i) => `<li class="${B.step===i+1?'cur':B.step>i+1?'done':''}"><i aria-hidden="true"></i><small>0${i+1}</small>${l}</li>`).join('');
   let h = '';
   if (B.step===1){
     h = `<div class="fcol" style="gap:16px"><h3>Quelle prestation ?</h3><div class="opts">${services.map(x => `<button class="opt" type="button" data-svc="${x.id}" aria-pressed="${B.service===x.id}"><img src="${IMG[x.img]}" alt=""><span><strong>${x.name}</strong><em>${x.meta}</em></span></button>`).join('')}</div></div>`;
@@ -130,6 +158,7 @@ function renderBk(){
   const ok = valid();
   $('#bNext').disabled = !ok; $('#bHint').textContent = ok ? '' : hints[B.step];
   $('#bNext').textContent = B.step===4 ? 'Envoyer sur WhatsApp →' : 'Continuer →';
+  if (B.step !== shownStep){ window.motion && window.motion.bkStep(B.step, shownStep); shownStep = B.step; }
 }
 $('#bkBody').addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
@@ -141,6 +170,10 @@ $('#bkBody').addEventListener('click', e => {
   else if (t.dataset.ppl){ B.people = Math.min(15, Math.max(1, B.people + +t.dataset.ppl)); }
   else return;
   renderBk();
+  /* petit rebond sur l'élément choisi (le contenu vient d'être redessiné) */
+  const k = Object.keys(t.dataset)[0];
+  const picked = $('#bkBody').querySelector(`[data-${k}="${CSS.escape(t.dataset[k])}"]`);
+  if (picked && k!=='mo' && k!=='ppl') picked.classList.add('pop');
 });
 $('#bkBody').addEventListener('input', e => {
   if (e.target.id==='fName') B.name = e.target.value;

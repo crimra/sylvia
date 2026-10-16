@@ -1,0 +1,69 @@
+/* Motion — états de départ (classe .m posée dans <head>), micro-interactions, en-tête flottant.
+   Tout reste visible et fonctionnel sans .m (animations coupées ou scripts non chargés). */
+
+/* ---------- Défilement fluide (Lenis) ---------- */
+html.lenis, html.lenis body{height:auto}
+html.lenis{scroll-behavior:auto}
+.lenis.lenis-stopped{overflow:hidden}
+
+/* ---------- Accueil : états de départ avant l'intro ---------- */
+.m .hero h1 .ln > span{transform:translateY(110%)}
+.m .hero p, .m .hero-ctas, .m .spaced > span, .m .pola-w, .m .top{opacity:0}
+.m .hero > img.bg{transform:scale(1.14)}
+
+/* Polaroïds : flottement continu (propriété translate, indépendante du transform du survol) */
+.pola{animation:float 6s ease-in-out infinite}
+.p2 .pola{animation-duration:7s;animation-delay:-2.5s}
+@keyframes float{0%,100%{translate:0 0}50%{translate:0 -12px}}
+
+/* ---------- En-tête : fixe, se cache en descendant, revient en remontant ---------- */
+.top{position:fixed;transition:transform .45s cubic-bezier(.2,.8,.2,1),background-color .3s,padding .3s,backdrop-filter .3s}
+.top.scrolled{padding-top:12px;padding-bottom:12px;background:rgba(14,13,12,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.top.away{transform:translateY(-110%)}
+
+/* ---------- Boutons : effet magnétique + flèche qui glisse ---------- */
+.magnet{translate:var(--mx,0px) var(--my,0px)}
+.btn > span[aria-hidden]{display:inline-block;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.btn:hover > span[aria-hidden]{transform:translateX(6px)}
+.btn-ghost{transition:color .2s,border-color .2s,background-color .2s}
+.btn-ghost:hover{background:rgba(246,226,62,.08)}
+
+/* ---------- Portfolio : la photo se soulève et zoome légèrement ---------- */
+.card .ph{overflow:hidden;transition:box-shadow .45s cubic-bezier(.2,.8,.2,1)}
+.card .ph img{transition:scale .6s cubic-bezier(.2,.8,.2,1)}
+.card:hover .ph, .card:focus-within .ph{box-shadow:0 34px 50px rgba(14,13,12,.32)}
+.card:hover .ph img, .card:focus-within .ph img{scale:1.07}
+.card .dot{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.card:hover .dot{transform:rotate(90deg) scale(1.15)}
+.chip{transition:background-color .25s,color .25s,transform .2s}
+.chip:active{transform:scale(.95)}
+
+/* ---------- Menu : lignes qui se dessinent + photo qui suit la souris ---------- */
+.svc{position:relative;border-top:0}
+.svc::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--ink);transform-origin:left;transform:scaleX(var(--line,1))}
+.svc h3{transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.svc:hover h3{transform:translateX(10px)}
+.svc-float{position:fixed;left:0;top:0;z-index:40;width:250px;height:320px;pointer-events:none;opacity:0;scale:.6;border:6px solid var(--paper);box-shadow:0 30px 60px rgba(0,0,0,.35);overflow:hidden;will-change:transform}
+.svc-float img{width:100%;height:100%;object-fit:cover;object-position:center 25%}
+
+/* ---------- Réservation ---------- */
+.prog li{position:relative}
+.prog li i{position:absolute;left:0;right:0;top:-4px;height:4px;background:var(--yellow);transform-origin:left;transform:scaleX(0)}
+.prog li.done i, .prog li.cur i{transform:scaleX(1)}
+.prog li.done, .prog li.cur{border-color:#2A2724}
+.pop{animation:pop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.88)}100%{transform:scale(1)}}
+.opt img{transition:scale .5s cubic-bezier(.2,.8,.2,1)}
+.opt:hover img{scale:1.06}
+.bk-main{position:relative;overflow:hidden}
+.spark{position:absolute;width:8px;height:8px;border-radius:50%;pointer-events:none;background:var(--yellow)}
+.spark.s2{background:var(--paper);width:5px;height:5px}
+.spark.s3{border-radius:1px;transform:rotate(45deg)}
+
+/* Lettres découpées pour les animations */
+.ch{display:inline-block;will-change:transform}
+
+@media (prefers-reduced-motion:reduce){
+  .pola{animation:none}
+  .svc-float{display:none}
+}
